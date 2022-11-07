@@ -3,7 +3,6 @@ from pwn import *
 import requests
 import signal
 import time
-import pdb
 import sys
 import string
 
