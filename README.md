@@ -7,6 +7,9 @@
 ## Directory traversal ✅
     Done: 6/6
 
+## Server-side request forgery (SSRF) ❌
+    Done: 0/7
+
 ## Cross-Site Scripting ❌
     Done: 0/30
 
@@ -24,9 +27,6 @@
 
 ## XML External Entity (XXE) Injection ❌
     Done: 0/9
-
-## Server-side request forgery (SSRF) ❌
-    Done: 0/7
 
 ## HTTP request smuggling ❌
     Done: 0/22
