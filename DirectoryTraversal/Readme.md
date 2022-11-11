@@ -1,5 +1,7 @@
 # DIRECTORY TRAVERSAL LABS: https://portswigger.net/web-security/file-path-traversal
 
+### TOTS els Path Traversal es faran en el paràmetre de les imatges
+
 ## **Lab 1**: File path traversal, simple case
 
     - TENIM: GET /image?filename=16.jpg HTTP/1.1
