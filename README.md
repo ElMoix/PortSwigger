@@ -4,8 +4,8 @@
 ## SQL INJECTION ✅
     Done: 15/17
 
-## Directory traversal ❌
-    Done: 0/6
+## Directory traversal ✅
+    Done: 6/6
 
 ## Cross-Site Scripting ❌
     Done: 0/30
