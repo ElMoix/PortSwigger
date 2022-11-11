@@ -4,6 +4,9 @@
 ## SQL INJECTION ✅
     Done: 15/17
 
+## Directory traversal ❌
+    Done: 0/6
+
 ## Cross-Site Scripting ❌
     Done: 0/30
 
@@ -33,9 +36,6 @@
 
 ## Server-side template injection ❌
     Done: 0/7
-
-## Directory traversal ❌
-    Done: 0/6
 
 ## Access control vulnerabilities ❌
     Done: 0/13
