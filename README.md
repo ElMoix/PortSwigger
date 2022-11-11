@@ -7,8 +7,8 @@
 ## Directory traversal ✅
     Done: 6/6
 
-## Server-side request forgery (SSRF) ❌
-    Done: 0/7
+## Server-side request forgery (SSRF) ✅ 
+    Done: 5/7
 
 ## Cross-Site Scripting ❌
     Done: 0/30
